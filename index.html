@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIOHAZARD 6 武器データベース</title>
+  <style>
+    :root {
+      --bg-dark: #0d0f12;
+      --card-bg: #181c22;
+      --accent: #c81e1e;
+      --accent-glow: rgba(200, 30, 30, 0.35);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #2d333b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: linear-gradient(180deg, #1a0808 0%, var(--bg-dark) 100%);
+      padding: 20px 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      color: #fff;
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 4px 4px;
+      justify-content: flex-start;
+      scrollbar-width: none;
+    }
+
+    @media (min-width: 600px) {
+      .filter-bar {
+        justify-content: center;
+      }
+    }
+
+    .filter-btn {
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-weight: bold;
+    }
+
+    .weapon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .weapon-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .weapon-card:hover {
+      border-color: #4b5563;
+    }
+
+    .weapon-card:active {
+      transform: scale(0.97);
+      border-color: var(--accent);
+    }
+
+    .card-cat {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: bold;
+      margin: 4px 0 8px;
+    }
+
+    .card-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .tap-hint {
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: #60a5fa;
+      text-align: right;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .modal-image-box {
+      background: radial-gradient(circle, #272c35 0%, #111317 100%);
+      height: 190px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-image-box img {
+      max-height: 150px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .modal-body {
+      padding: 18px;
+    }
+
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .modal-body h2 {
+      font-size: 1.35rem;
+      margin: 6px 0;
+    }
+
+    .appearance-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .spec-item {
+      background: #111418;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .spec-label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .spec-value {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .spec-value.highlight {
+      color: #f87171;
+    }
+
+    .location-box h3 {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+    }
+
+    .location-box ul {
+      list-style: none;
+    }
+
+    .location-box li {
+      background: #111418;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .loc-tag {
+      color: #fbbf24;
+      font-weight: bold;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BIOHAZARD 6 WEAPON DB</h1>
+    <p class="subtitle">武器をタップして見た目・威力・入手場所を表示</p>
+    
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-filter="ALL">すべて</button>
+      <button class="filter-btn" data-filter="レオン編">レオン編</button>
+      <button class="filter-btn" data-filter="クリス編">クリス編</button>
+      <button class="filter-btn" data-filter="ジェイク編">ジェイク編</button>
+      <button class="filter-btn" data-filter="エイダ編">エイダ編</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="weapon-grid" id="weaponGrid"></div>
+  </main>
+
+  <div class="modal-overlay" id="weaponModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal" aria-label="閉じる">&times;</button>
+      <div class="modal-image-box" id="modalImageBox"></div>
+      <div class="modal-body">
+        <span class="badge" id="modalCategory">カテゴリ</span>
+        <h2 id="modalName">武器名</h2>
+        <p class="appearance-desc" id="modalAppearance">見た目の特徴</p>
+        
+        <div class="spec-grid">
+          <div class="spec-item">
+            <span class="spec-label">ダメージ量（威力）</span>
+            <span class="spec-value highlight" id="modalDamage">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">使用弾丸 / 装弾数</span>
+            <span class="spec-value" id="modalAmmo">-</span>
+          </div>
+        </div>
+
+        <div class="location-box">
+          <h3>入手シナリオ・チャプター・場所</h3>
+          <ul id="modalLocations"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const weapons = [
+      {
+        name: "ウィングシューター",
+        category: "ハンドガン",
+        damage: "120（二丁拳銃で連射可能）",
+        ammo: "9mm弾 / 装弾数 18",
+        appearance: "シルバーのスライドを持つ大型ハンドガン。レオン操作時は二丁拳銃スタイルに切り替え可能。",
+        silhouetteType: "handgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "レオン編", chapter: "Chapter 1", detail: "初期装備（レオン専用）" }
+        ]
+      },
+      {
+        name: "ピカドール",
+        category: "ハンドガン",
+        damage: "160",
+        ammo: "9mm弾 / 装弾数 16",
+        appearance: "ブラックとシルバーのツートンカラーの自動拳銃。装弾数と威力のバランスが良い。",
+        silhouetteType: "handgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "レオン編", chapter: "Chapter 1", detail: "初期装備（ヘレナ専用）" }
+        ]
+      },
+      {
+        name: "ハンドガン 909",
+        category: "ハンドガン",
+        damage: "150",
+        ammo: "9mm弾 / 装弾数 15",
+        appearance: "オーソドックスな黒塗りの軍用自動拳銃。クリスとジェイクが初期所持。",
+        silhouetteType: "handgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "クリス編", chapter: "Chapter 1", detail: "初期装備（クリス専用）" },
+          { scenario: "ジェイク編", chapter: "Chapter 1", detail: "初期装備（ジェイク専用）" }
+        ]
+      },
+      {
+        name: "トリプルショット",
+        category: "ハンドガン",
+        damage: "130（3点バースト対応）",
+        ammo: "9mm弾 / 装弾数 20",
+        appearance: "コンパクトなフレームに多弾数マガジンを備えたバースト拳銃。",
+        silhouetteType: "handgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "ジェイク編", chapter: "Chapter 1", detail: "初期装備（シェリー専用）" }
+        ]
+      },
+      {
+        name: "ショットガン",
+        category: "ショットガン",
+        damage: "近距離 180×7 / 遠距離 140×7",
+        ammo: "12ゲージ弾 / 装弾数 8",
+        appearance: "木製または合成樹脂ストックを備えた標準的なポンプアクション式散弾銃。",
+        silhouetteType: "shotgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "レオン編", chapter: "Chapter 1", detail: "地下鉄構内の車両付近、または大学構内の武器庫" },
+          { scenario: "ジェイク編", chapter: "Chapter 4", detail: "ネオアンブレラ医療研究施設内の棚" }
+        ]
+      },
+      {
+        name: "ハイドラ",
+        category: "ショットガン",
+        damage: "近距離 170×7 / 遠距離 120×7",
+        ammo: "10ゲージ弾 / 装弾数 3",
+        appearance: "銃身が3本束ねられた水平三連銃身のソードオフ・ショットガン。",
+        silhouetteType: "shotgun",
+        imageUrl: "",
+        locations: [
+          { scenario: "レオン編", chapter: "Chapter 1", detail: "初期装備（ヘレナ専用）" }
+        ]
+      },
+      {
